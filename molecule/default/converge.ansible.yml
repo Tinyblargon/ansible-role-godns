@@ -1,0 +1,31 @@
+---
+- name: Converge
+  hosts: localhost
+  become: true
+
+  pre_tasks:
+    - name: Update apt cache.
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 900
+      when: ansible_os_family == 'Debian'
+
+    - name: Wait for systemd to complete initialization.
+      ansible.builtin.command: systemctl is-system-running
+      register: systemctl_status
+      until: >
+        'running' in systemctl_status.stdout or
+        'degraded' in systemctl_status.stdout
+      retries: 30
+      delay: 5
+      when: ansible_service_mgr == 'systemd'
+      changed_when: false
+      failed_when: systemctl_status.rc > 1
+
+  roles:
+    - role: tinyblargon.godns
+      vars:
+        godns_checksum: sha256:e10e1625f8adf22c74eaa6d30a7a656d88c99ea17a3caf382f46b69f26ce46c0
+        godns_config: >-
+          {{ lookup('file', 'test/config.' + lookup('env', 'TEST_CONFIG')) }}
+        godns_version: v3.2.5
