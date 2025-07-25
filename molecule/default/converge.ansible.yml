@@ -27,5 +27,5 @@
       vars:
         godns_checksum: sha256:e10e1625f8adf22c74eaa6d30a7a656d88c99ea17a3caf382f46b69f26ce46c0
         godns_config: >-
-          {{ lookup('file', 'molecule/test/' + lookup('env', 'TEST_CONFIG')) }}
+          {{ lookup('file', 'test/' + lookup('env', 'TEST_CONFIG')) }}
         godns_version: v3.2.5
