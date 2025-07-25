@@ -44,8 +44,8 @@ jobs:
           - debian12
           - debian11
         config:
-          - config.json
-          - config.yml
+          - json
+          - yml
 
     steps:
       - name: Check out the codebase.
