@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: godns
+  namespace: tinyblargon
+  author: Tinyblargon
+  description: Ansible role to install and configure https://github.com/TimothyYe/godns
+  license: MIT
+  min_ansible_version: "2.14.18"
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+        - bookworm
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+  galaxy_tags:
+    - godns
+    - dns
+    - dynamic

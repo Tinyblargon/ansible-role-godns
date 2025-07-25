@@ -1,0 +1,8 @@
+---
+godns_version: ""
+godns_config: ""
+godns_checksum: ""
+godns_path: "/opt/godns"
+godns_service_name: "godns"
+godns_wait: 5
+godns_state: "present"

@@ -1,0 +1,10 @@
+---
+- name: Ensure GoDNS is installed and configured
+  ansible.builtin.include_tasks:
+    file: present.ansible.yml
+  when: godns_state == 'present'
+
+- name: Ensure GoDNS is removed
+  ansible.builtin.include_tasks:
+    file: absent.ansible.yml
+  when: godns_state == 'absent'

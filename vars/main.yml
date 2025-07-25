@@ -1,0 +1,53 @@
+---
+# User GoDNS will run as
+godns_user: "godns"
+godns_group: "{{ godns_user }}"
+
+# Name of the GoDNS service file
+godns_service: "{{ godns_service_name_trimmed + '.service' }}"
+
+# Trims the service name to remove the '.service' suffix
+godns_service_name_trimmed: >-
+  {{ godns_service_name | regex_replace('\\.service$', '') }}
+
+# Full path to the GoDNS service file
+godns_service_file: "/etc/systemd/system/{{ godns_service }}"
+
+# Checks if the number of restarts has increased
+godns_service_failed: >-
+  {{ godns_service_status.status['NRestarts'] | int >
+    godns_service_started.status['NRestarts'] | int}}
+
+# Trims the 'v' prefix from the version string
+godns_version_trimmed: "{{ godns_version | regex_replace('^v', '') }}"
+
+# Full path to the GoDNS version file
+godns_version_file: "{{ godns_path }}/version"
+
+# Content for the GoDNS version file
+godns_version_file_content: "{{ godns_version_trimmed }}"
+
+# Sets the architecture when downloading the binary
+# amd64 for x86_64, arm64 for aarch64, 386 for i386
+godns_architecture: >-
+  {{ ('amd64' if ansible_architecture == 'x86_64' else '')
+  + ('arm64' if ansible_architecture == 'aarch64' else '')
+  + ('386' if ansible_architecture == 'i386' else '') }}
+
+# Adds Ansible managed comment to the configuration file
+godns_config_content: >-
+  {{ '# Managed by Ansible\n' +
+    ((godns_config | to_json) if godns_config is mapping else godns_config) }}
+
+# Name of the GoDNS configuration file
+godns_config_file: "config.{{ godns_config_type }}"
+
+# Determines if the system uses systemd
+godns_uses_systemd: >-
+  {{ ansible_facts['distribution'] in ['Debian', 'Ubuntu'] }}
+
+# Determines if a restart is required
+godns_restart_required: >-
+  {{ godns_version_file_check.changed
+    or godns_service_created.changed
+    or godns_config_file_check.changed }}

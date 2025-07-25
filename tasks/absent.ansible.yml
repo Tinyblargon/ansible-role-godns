@@ -1,0 +1,35 @@
+---
+- name: Check if GoDNS is installed
+  ansible.builtin.stat:
+    path: "{{ godns_service_file }}"
+  register: godns_service_file_check
+
+- name: Ensure GoDNS service is stopped and disabled
+  ansible.builtin.systemd:
+    name: "{{ godns_service }}"
+    state: stopped
+    enabled: false
+  when: godns_uses_systemd and godns_service_file_check.stat.exists
+
+- name: Ensure GoDNS service file is removed
+  ansible.builtin.file:
+    path: "{{ godns_service_file }}"
+    state: absent
+  when: godns_uses_systemd
+  register: godns_service_file_removed
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: godns_service_file_removed.changed is defined
+    and godns_service_file_removed.changed
+
+- name: Ensure install directory is removed
+  ansible.builtin.file:
+    dest: "{{ godns_path }}"
+    state: absent
+
+- name: Ensure GoDNS user is removed
+  ansible.builtin.user:
+    name: "{{ godns_user }}"
+    state: absent

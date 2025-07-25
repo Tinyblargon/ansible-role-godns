@@ -1,0 +1,122 @@
+---
+- name: Ensure GoDNS user exists
+  ansible.builtin.user:
+    name: "{{ godns_user }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+    state: present
+
+- name: Ensure install directory exists
+  ansible.builtin.file:
+    dest: "{{ godns_path }}"
+    state: directory
+    owner: "{{ godns_user }}"
+    group: "{{ godns_group }}"
+    mode: "0750"
+
+- name: Check GoDNS version file
+  ansible.builtin.copy:
+    dest: "{{ godns_version_file }}"
+    content: "{{ godns_version_file_content }}"
+    mode: "{{ omit }}"
+  check_mode: true
+  register: godns_version_file_check
+
+- name: Download GoDNS binary
+  ansible.builtin.include_tasks:
+    file: download.ansible.yml
+  when: godns_version_file_check.changed
+
+- name: Attempt to parse the GoDNS configuration
+  block:
+    - name: Check if GoDNS configuration is JSON
+      ansible.builtin.set_fact:
+        godns_config_type: "json"
+        godns_tmp: >-
+          {{ '' if godns_config is mapping else godns_config | from_json }}
+      no_log: true
+  rescue:
+    - name: Attempt to parse the GoDNS configuration as YAML
+      block:
+        - name: Check if GoDNS configuration is YAML
+          ansible.builtin.set_fact:
+            godns_config_type: "yaml"
+            godns_tmp: "{{ godns_config | from_yaml }}"
+          no_log: true
+          failed_when: godns_config == ""
+      rescue:
+        - name: Fail if GoDNS configuration is neither JSON nor YAML
+          ansible.builtin.debug:
+            msg: "GoDNS configuration must be valid JSON or YAML."
+          failed_when: true
+
+- name: Ensure GoDNS configuration file is present
+  ansible.builtin.copy:
+    dest: "{{ godns_path }}/config.{{ godns_config_type }}"
+    content: "{{ godns_config_content }}"
+    owner: "{{ godns_user }}"
+    group: "{{ godns_group }}"
+    mode: "0640"
+  when: godns_config != ""
+  no_log: true
+  register: godns_config_file_check
+
+- name: Systemd
+  when: godns_uses_systemd
+  block:
+    - name: Create GoDNS systemd service file
+      ansible.builtin.template:
+        src: "godns.service.j2"
+        dest: "{{ godns_service_file }}"
+        owner: root
+        group: root
+        mode: "0644"
+      register: godns_service_created
+    - name: Restart GoDNS service
+      ansible.builtin.systemd_service:
+        name: "{{ godns_service }}"
+        state: restarted
+        enabled: true
+        daemon_reload: "{{ godns_service_created.changed }}"
+      when: godns_restart_required
+    - name: Ensure GoDNS service is started and enabled
+      ansible.builtin.systemd_service:
+        name: "{{ godns_service }}"
+        state: started
+        enabled: true
+      register: godns_service_started
+    - name: Wait for GoDNS service to be active
+      ansible.builtin.pause:
+        echo: false
+        seconds: "{{ godns_wait }}"
+    - name: Get GoDNS service status
+      ansible.builtin.systemd_service:
+        name: "{{ godns_service }}"
+      register: godns_service_status
+      check_mode: true
+    - name: GoDNS service status
+      ansible.builtin.debug:
+        msg: >-
+          {{ godns_service_name_trimmed + ' service is not running properly. '
+            + 'Exit code: ' + godns_service_status.status.ExecMainStatus }}
+      failed_when: godns_service_failed
+      when: godns_service_failed
+
+- name: Ensure old GoDNS configuration file is removed
+  ansible.builtin.file:
+    path: "{{ godns_path }}/config.{{ godns_config_type_old }}"
+    state: absent
+  vars:
+    godns_config_type_old: >-
+      {{ 'yaml' if godns_config_type == 'json' else 'json' }}
+
+# We treat this as a lock, it means the service is running after we changed version
+- name: Write GoDNS version file
+  ansible.builtin.copy:
+    dest: "{{ godns_version_file }}"
+    content: "{{ godns_version_file_content }}"
+    owner: "{{ godns_user }}"
+    group: "{{ godns_group }}"
+    mode: "0644"
+  when: godns_version_file_check.changed

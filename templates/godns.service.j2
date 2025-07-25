@@ -1,0 +1,15 @@
+# Managed by Ansible
+[Unit]
+Description=GoDNS Service
+After=network.target
+
+[Service]
+ExecStart={{ godns_path }}/godns -c {{ godns_path + '/' + godns_config_file }}
+Group={{ godns_group }}
+User={{ godns_user }}
+Restart=always
+KillMode=process
+RestartSec=2s
+
+[Install]
+WantedBy=multi-user.target

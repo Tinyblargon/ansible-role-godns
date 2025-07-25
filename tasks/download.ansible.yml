@@ -1,0 +1,32 @@
+---
+- name: Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+  register: godns_temp_dir
+
+- name: Download GoDNS binary
+  ansible.builtin.get_url:
+    url: >-
+      {{ 'https://github.com/TimothyYe/godns/releases/download/v'
+      + godns_version_trimmed + '/godns_'
+      + godns_version_trimmed + '_linux_'
+      + godns_architecture + '.tar.gz' }}
+    dest: "{{ godns_temp_dir.path }}/godns.tar.gz"
+    owner: "{{ godns_user }}"
+    group: "{{ godns_group }}"
+    mode: "0644"
+    checksum: "{{ godns_checksum if godns_checksum != '' else omit }}"
+
+- name: Extract GoDNS binary
+  ansible.builtin.unarchive:
+    src: "{{ godns_temp_dir.path }}/godns.tar.gz"
+    dest: "{{ godns_path }}"
+    remote_src: true
+    mode: "0755"
+    owner: "{{ godns_user }}"
+    group: "{{ godns_group }}"
+
+- name: Remove temporary directory
+  ansible.builtin.file:
+    dest: "{{ godns_temp_dir.path }}"
+    state: absent
