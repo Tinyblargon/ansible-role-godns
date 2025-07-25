@@ -34,9 +34,9 @@ godns_architecture: >-
   + ('arm64' if ansible_architecture == 'aarch64' else '')
   + ('386' if ansible_architecture == 'i386' else '') }}
 
-# Adds Ansible managed comment to the configuration file
+# Contents of the GoDNS configuration file
 godns_config_content: >-
-  {{ '# Managed by Ansible\n' +
+  {{ ('# Managed by Ansible\n' if godns_config_file == 'yaml' else '') +
     ((godns_config | to_json) if godns_config is mapping else godns_config) }}
 
 # Name of the GoDNS configuration file
