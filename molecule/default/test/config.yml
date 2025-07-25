@@ -1,0 +1,10 @@
+---
+provider: Cloudflare
+login_token: "API Token"
+domains:
+  - domain_name: example.com
+    sub_domains:
+      - godns
+ip_urls:
+  - "https://ipv4.icanhazip.com/"
+ip_type: IPv4
