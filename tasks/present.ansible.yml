@@ -23,10 +23,48 @@
   check_mode: true
   register: godns_version_file_check
 
-- name: Download GoDNS binary
+- name: Download GoDNS binary on remote hosts
   ansible.builtin.include_tasks:
-    file: download.ansible.yml
-  when: godns_version_file_check.changed
+    file: download_remote.ansible.yml
+  when: godns_version_file_check.changed and godns_local_download is false
+
+- name: Set GoDNS version
+  ansible.builtin.set_fact:
+    godns_fact_download: >-
+      {{ {
+        'version': godns_version_trimmed,
+        'checksum': godns_checksum,
+        'architecture': godns_architecture,
+      } }}
+  when: godns_version_file_check.changed and godns_local_download is true
+
+- name: Download GoDNS binary on local host
+  ansible.builtin.include_tasks:
+    file: download_local.ansible.yml
+  run_once: true
+  when: hostvars | dict2items
+    | selectattr('value.godns_fact_download', 'defined') | length > 0
+
+- name: Extract GoDNS binary on remote hosts
+  ansible.builtin.unarchive:
+    src: >-
+      {{ godns_tempdir_download_path + '/'
+        + godns_fact_download.architecture + '_'
+        + godns_fact_download.version + '.tar.gz' }}
+    dest: "{{ godns_path }}"
+    mode: "0755"
+    owner: "{{ godns_user }}"
+    group: "{{ godns_group }}"
+  when: godns_fact_download is defined
+
+- name: Delete temporary directory on local host
+  ansible.builtin.file:
+    path: "{{ godns_tempdir_download.path }}"
+    state: absent
+  become: false
+  run_once: true
+  delegate_to: localhost
+  when: godns_tempdir_download.path is defined
 
 - name: Attempt to parse the GoDNS configuration
   block:
