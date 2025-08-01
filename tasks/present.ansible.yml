@@ -60,6 +60,7 @@
 - name: Delete temporary directory on local host
   ansible.builtin.file:
     path: "{{ godns_tempdir_download.path }}"
+    state: absent
   become: false
   run_once: true
   delegate_to: localhost
