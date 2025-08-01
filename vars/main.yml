@@ -52,7 +52,7 @@ godns_restart_required: >-
     or godns_service_created.changed
     or godns_config_file_check.changed }}
 
-# Delagated temp dir on localhost
+# Delegated temp dir on localhost
 godns_tempdir_download_path: >-
   {{ hostvars | dict2items
       | selectattr('value.godns_tempdir_download.path', 'defined')

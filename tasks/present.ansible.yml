@@ -45,7 +45,7 @@
   when: hostvars | dict2items
     | selectattr('value.godns_fact_download', 'defined') | length > 0
 
-- name: Extarct GoDNS binary on remote hosts
+- name: Extract GoDNS binary on remote hosts
   ansible.builtin.unarchive:
     src: >-
       {{ godns_tempdir_download_path + '/'
