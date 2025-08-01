@@ -23,7 +23,7 @@ Ansible role to install and configure [GoDNS](https://github.com/TimothyYe/godns
 | godns_service_name:  | no          | string | "godns"          | The name of the system service.|
 | godns_wait:          | no          | int    | 5                | Number of seconds to wait while verifying the service started correctly.|
 | godns_local_download:| no          | bool   | false            | If `true` the binary will be downloaded by the local machine running the playbook. and then copied to the remote host. If `false` the binary will be downloaded directly from the remote host.|
-| godns_state:         | no          | string | "present"        | When `"presnt"` the GoDNS application will be installed and configured, when `"absent"` the GoDNS appication will be removed.|
+| godns_state:         | no          | string | "present"        | When `"present"` the GoDNS application will be installed and configured, when `"absent"` the GoDNS application will be removed.|
 
 ## Example Playbook
 
