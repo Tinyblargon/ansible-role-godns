@@ -1,0 +1,30 @@
+---
+- name: Create temporary directory on Local host
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: godns
+  become: false
+  delegate_to: localhost
+  register: godns_tempdir_download
+
+- name: Download GoDNS binary to Local host
+  ansible.builtin.get_url:
+    url: >-
+      {{ 'https://github.com/TimothyYe/godns/releases/download/v'
+      + item.version + '/godns_'
+      + item.version + '_linux_'
+      + item.architecture + '.tar.gz' }}
+    dest: >-
+      {{ godns_tempdir_download.path + '/'
+        + item.architecture + '_' + item.version + '.tar.gz' }}
+    mode: "0644"
+    checksum: "{{ item.checksum if item.checksum != '' else omit }}"
+  loop: >-
+    {{ hostvars | dict2items
+      | selectattr('value.godns_fact_download', 'defined')
+      | map(attribute='value.godns_fact_download')
+      | list | unique }}
+  loop_control:
+    label: "{{ item.architecture + ':v' + item.version }}"
+  become: false
+  delegate_to: localhost
