@@ -29,4 +29,5 @@
         godns_config: >-
           {{ lookup('file', 'test/config.' + lookup('env', 'TEST_CONFIG')) }}
         godns_version: v3.2.5
-        godns_local_download: "{{ lookup('env', 'LOCAL_DOWNLOAD') }}"
+        godns_local_download: >-
+          {{ true if lookup('env', 'LOCAL_DOWNLOAD') == 'true' else false }}
