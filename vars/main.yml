@@ -57,4 +57,4 @@ godns_tempdir_download_path: >-
   {{ hostvars | dict2items
       | selectattr('value.godns_tempdir_download.path', 'defined')
       | map(attribute='value.godns_tempdir_download.path')
-      | list | first }}
+      | list | first | default('') }}
