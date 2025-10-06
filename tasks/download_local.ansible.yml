@@ -20,10 +20,13 @@
     mode: "0644"
     checksum: "{{ item.checksum if item.checksum != '' else omit }}"
   loop: >-
-    {{ hostvars | dict2items
+    {{ ((hostvars | dict2items
       | selectattr('value.godns_fact_download', 'defined')
       | map(attribute='value.godns_fact_download')
-      | list | unique }}
+      | list)
+      + ( [hostvars['localhost'].godns_fact_download]
+        if hostvars['localhost'].godns_fact_download is defined
+        else []))| unique }}
   loop_control:
     label: "{{ item.architecture + ':v' + item.version }}"
   become: false

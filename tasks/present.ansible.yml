@@ -42,13 +42,16 @@
   ansible.builtin.include_tasks:
     file: download_local.ansible.yml
   run_once: true
-  when: hostvars | dict2items
-    | selectattr('value.godns_fact_download', 'defined') | length > 0
+  when: (hostvars | dict2items
+    | selectattr('value.godns_fact_download', 'defined') | length > 0)
+    or hostvars['localhost'].godns_fact_download is defined
 
 - name: Extract GoDNS binary on remote hosts
   ansible.builtin.unarchive:
     src: >-
-      {{ godns_tempdir_download_path + '/'
+      {{ (godns_tempdir_download_path
+          if godns_tempdir_download_path != ''
+          else godns_tempdir_download_path_local) + '/'
         + godns_fact_download.architecture + '_'
         + godns_fact_download.version + '.tar.gz' }}
     dest: "{{ godns_path }}"

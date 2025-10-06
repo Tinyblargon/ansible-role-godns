@@ -58,3 +58,8 @@ godns_tempdir_download_path: >-
       | selectattr('value.godns_tempdir_download.path', 'defined')
       | map(attribute='value.godns_tempdir_download.path')
       | list | first | default('') }}
+
+# Delegated temp dir on localhost when running on localhost
+godns_tempdir_download_path_local: >-
+  {{ hostvars['localhost'].godns_tempdir_download.path
+    if hostvars['localhost'].godns_tempdir_download.path is defined else '' }}
