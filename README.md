@@ -1,5 +1,7 @@
 # Ansible Role: godns
 
+[![CI](https://github.com/Tinyblargon/ansible-role-godns/actions/workflows/ci.yml/badge.svg)](https://github.com/Tinyblargon/ansible-role-godns)
+
 Ansible role to install and configure [GoDNS](https://github.com/TimothyYe/godns)
 
 ## Requirements
