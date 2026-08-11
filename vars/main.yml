@@ -30,9 +30,9 @@ godns_version_file_content: "{{ godns_version_trimmed }}"
 # Sets the architecture when downloading the binary
 # amd64 for x86_64, arm64 for aarch64, 386 for i386
 godns_architecture: >-
-  {{ ('amd64' if ansible_architecture == 'x86_64' else '')
-  + ('arm64' if ansible_architecture == 'aarch64' else '')
-  + ('386' if ansible_architecture == 'i386' else '') }}
+  {{ ('amd64' if ansible_facts["architecture"] == 'x86_64' else '')
+  + ('arm64' if ansible_facts["architecture"] == 'aarch64' else '')
+  + ('386' if ansible_facts["architecture"] == 'i386' else '') }}
 
 # Contents of the GoDNS configuration file
 godns_config_content: >-
