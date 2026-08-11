@@ -40,6 +40,8 @@ jobs:
       fail-fast: false
       matrix:
         distro:
+          - debian13
+          - ubuntu2604
           - ubuntu2404
           - ubuntu2204
           - debian12
